@@ -1,0 +1,25 @@
+# Core Dependencies
+transformers>=4.47.0
+torch>=2.0
+torchvision
+torchaudio
+accelerate
+einops
+qwen-tts
+onnxruntime
+
+# UI and Framework
+streamlit
+huggingface_hub
+librosa
+soundfile
+python-dotenv
+
+# AI APIs
+google-genai
+groq
+
+# Data and Utils
+numpy
+pandas
+# sqlite3 is built-in for Python

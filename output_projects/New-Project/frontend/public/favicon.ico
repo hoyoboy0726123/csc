@@ -1,0 +1,2 @@
+favicon.ico 為二進位檔案，無法以文字形式直接提供可執行的「程式碼」。  
+請以任何 32×32 或 64×64 像素、副檔名為 .ico 的合法圖示檔取代 frontend/public/favicon.ico 即可，確保打包後路徑與 Next.js 預設靜態檔目錄一致。
