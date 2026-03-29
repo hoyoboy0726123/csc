@@ -1,9 +1,0 @@
-streamlit
-pandas
-numpy
-PyYAML
-openai
-kubernetes
-docker
-PyJWT
-python-dotenv

@@ -73,5 +73,16 @@ def get_latest_prd(project_id):
     conn.close()
     return res
 
+def delete_project_record(project_id):
+    """從資料庫中移除專案及其相關 PRD 紀錄。"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    # 1. 刪除 PRD 紀錄
+    cursor.execute('DELETE FROM prd_records WHERE project_id = ?', (project_id,))
+    # 2. 刪除專案主紀錄
+    cursor.execute('DELETE FROM projects WHERE id = ?', (project_id,))
+    conn.commit()
+    conn.close()
+
 if __name__ == "__main__":
     init_db()

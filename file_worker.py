@@ -1,5 +1,5 @@
 import os
-
+import shutil
 from datetime import datetime
 
 OUTPUT_DIR = "output_projects"
@@ -41,5 +41,12 @@ def update_specific_file(project_path, file_rel_path, new_content):
     if os.path.exists(full_path):
         with open(full_path, "w", encoding="utf-8") as f:
             f.write(new_content)
+        return True
+    return False
+
+def delete_project_folder(project_path):
+    """物理刪除專案資料夾及其所有內容。"""
+    if os.path.exists(project_path):
+        shutil.rmtree(project_path)
         return True
     return False

@@ -100,8 +100,27 @@ def call_model(system_prompt, user_content):
     return "連線失敗。"
 
 def generate_prd(raw_text):
-    system = "你是一個專業的 PM。請將需求整理成結構化的繁體中文 Markdown PRD。"
-    return call_model(system, f"使用者原始需求：\n{raw_text}")
+    """
+    高品質 PRD 生成：先進行開發需求摘要，再規劃 PRD。
+    """
+    # 1. 摘要提取層：過濾冗長會議雜訊
+    summary_system = """
+    你是一個資深技術分析師。
+    使用者的輸入可能包含冗長的會議紀錄、閒聊或非結構化的想法。
+    你的任務：
+    1. 過濾掉所有與「軟體開發」無關的雜訊 (如：問候、閒聊、重複的口頭禪)。
+    2. 精確提取出：功能描述、業務規則、技術限制、UI 要求。
+    3. 如果資訊太少，請維持原樣；如果太冗長，請濃縮為技術重點。
+    """
+    
+    with st.spinner("🔍 正在從原始語音中提取開發核心需求..."):
+        distilled_text = call_model(summary_system, f"原始需求內容：\n{raw_text}")
+        if distilled_text.startswith("WAIT_REQUIRED"):
+            return distilled_text # 傳遞等待協定
+
+    # 2. 正式 PRD 規劃層
+    prd_system = "你是一個專業的 PM。請根據以下已提取的核心開發需求，整理成結構化的繁體中文 Markdown PRD。"
+    return call_model(prd_system, f"核心需求清單：\n{distilled_text}")
 
 def update_prd_with_feedback(old_prd, feedback):
     system = """你是一個專業的 PM。請回傳「整份更新後的 PRD」，格式為完整的 Markdown。嚴禁只回傳修正片段。"""
