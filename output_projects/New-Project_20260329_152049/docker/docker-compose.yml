@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  ai-csm:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ai-csm
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../data:/app/data
+      - ../uploads:/app/uploads
+      - ../logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

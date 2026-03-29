@@ -449,6 +449,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "qwen-tts" },
     { name = "soundfile" },
+    { name = "sox" },
     { name = "streamlit" },
     { name = "torch" },
     { name = "torchaudio" },
@@ -470,11 +471,12 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "qwen-tts", specifier = ">=0.1.1" },
     { name = "soundfile", specifier = ">=0.13.1" },
+    { name = "sox", specifier = ">=1.5.0" },
     { name = "streamlit", specifier = ">=1.55.0" },
-    { name = "torch", specifier = ">=2.0" },
-    { name = "torchaudio", specifier = ">=2.11.0" },
+    { name = "torch", specifier = ">=2.6.0" },
+    { name = "torchaudio", specifier = ">=2.6.0" },
     { name = "torchvision", specifier = ">=0.26.0" },
-    { name = "transformers", specifier = ">=4.47.0" },
+    { name = "transformers", specifier = ">=4.57.3" },
 ]
 
 [[package]]
@@ -787,6 +789,7 @@ dependencies = [
     { name = "gradio-client" },
     { name = "typer" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/48/d8/1771d6f1591099ecd10776782d08c6f87e7c2501f9e9e6ffb7c2ecc07d0c/hf_gradio-0.3.0.tar.gz", hash = "sha256:e74a0f9eab14a1d6f54c523c2192aa5283ca51f01605f661b2542387da5b9fc0", size = 6235 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4c/52/04816d2a15691a63cec3187e3e592c4493448eb4834492eadd532972b035/hf_gradio-0.3.0-py3-none-any.whl", hash = "sha256:159d33d1f0affae8164d29c0c51a63dfcc0bbc90803b07c6f139137206a796ae", size = 4154 },
 ]

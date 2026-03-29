@@ -1,0 +1,197 @@
+:root {
+  --primary: #0e6cff;
+  --primary-dark: #0053d9;
+  --secondary: #f5f7fa;
+  --danger: #e02020;
+  --warning: #faad14;
+  --success: #52c41a;
+  --text: #1f1f1f;
+  --text-light: #595959;
+  --border: #e8e8e8;
+  --radius: 8px;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------- 全域覆蓋 ---------- */
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--text);
+  background-color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Streamlit 容器 ---------- */
+.stApp {
+  background-color: #ffffff;
+}
+
+/* ---------- 頂部標題列 ---------- */
+.stApp header {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+.stApp header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ---------- 側邊欄 ---------- */
+.css-1d391kg {
+  background-color: var(--secondary);
+  border-right: 1px solid var(--border);
+}
+
+/* ---------- 按鈕 ---------- */
+.stButton > button {
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  transition: background-color 0.2s ease;
+}
+
+.stButton > button:hover {
+  background-color: var(--primary-dark);
+}
+
+.stButton > button[kind="secondary"] {
+  background-color: #ffffff;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.stButton > button[kind="secondary"]:hover {
+  background-color: var(--secondary);
+}
+
+/* ---------- 表格 ---------- */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+th {
+  background-color: var(--secondary);
+  color: var(--text-light);
+  font-weight: 600;
+  padding: 0.75rem;
+  border-bottom: 2px solid var(--border);
+}
+
+td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+tr:hover {
+  background-color: #fafbfc;
+}
+
+/* ---------- Kanban 卡片 ---------- */
+.kanban-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow);
+  cursor: grab;
+  transition: box-shadow 0.2s ease;
+}
+
+.kanban-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.kanban-card.dragging {
+  opacity: 0.6;
+  cursor: grabbing;
+}
+
+/* ---------- 狀態標籤 ---------- */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.status-open {
+  background-color: var(--warning);
+}
+
+.status-progress {
+  background-color: var(--primary);
+}
+
+.status-closed {
+  background-color: var(--success);
+}
+
+/* ---------- 表單輸入 ---------- */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea,
+.stSelectbox > div > div > div {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+}
+
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(14, 108, 255, 0.2);
+}
+
+/* ---------- 上傳區塊 ---------- */
+.stFileUploader {
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius);
+  background-color: #f0f7ff;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.stFileUploader:hover {
+  border-color: var(--primary-dark);
+}
+
+/* ---------- 錯誤 / 警告訊息 ---------- */
+.stAlert > div {
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+}
+
+.stAlert > div[kind="error"] {
+  background-color: #fff0f0;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.stAlert > div[kind="warning"] {
+  background-color: #fffbe6;
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.stAlert > div[kind="success"] {
+  background-color: #f6ffed;
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+/* ---------- 隱藏 Streamlit 預設 footer ---------- */
+footer {
+  visibility: hidden;
+  height: 0;
+}

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caseintelli-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: caseintelli
+  template:
+    metadata:
+      labels:
+        app: caseintelli
+    spec:
+      containers:
+      - name: caseintelli
+        image: caseintelli:latest
+        ports:
+        - containerPort: 8501
+        env:
+        - name: OPENAI_API_KEY
+          value: ${OPENAI_API_KEY}
+        - name: SQLITE_DB_PATH
+          value: /app/data/caseintelli.db
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: caseintelli-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: caseintelli-service
+spec:
+  selector:
+    app: caseintelli
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8501
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: caseintelli-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

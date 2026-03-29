@@ -1,51 +1,74 @@
-import librosa
-import torch
-import numpy as np
-from model_loader import load_model
-import streamlit as st
-
-def preprocess_audio(file_path, target_sr=16000):
-    """
-    預處理音訊檔案：重取樣並轉換為單聲道。
-    """
-    audio, _ = librosa.load(file_path, sr=target_sr, mono=True)
-    return audio
+import os
+import database
+from groq import Groq
 
 def transcribe_audio(file_path):
     """
-    呼叫 Qwen3 模型進行語音轉譯。
-    注意：根據 Qwen3-TTS 的實作，此處需要遵循其官方推論邏輯。
+    使用 Groq Whisper API 進行轉譯。
+    使用 verbose_json 並根據停頓時間自動斷句換行。
     """
-    model, tokenizer, device = load_model()
+    api_key = database.get_config("ACTIVE_KEY")
+    if not api_key:
+        return "尚未設定 Groq API Key。"
     
-    if not model or not tokenizer:
-        return "模型載入失敗，無法轉譯。"
-
-    # 1. 讀取並預處理音訊
-    audio = preprocess_audio(file_path)
-    
-    # 2. 轉換為模型輸入格式
-    # 注意：Qwen-TTS 模型通常有特定的輸入處理方式，
-    # 這裡假設模型支援從音訊特徵提取。
-    # 實際實作中，可能需要使用特定的 processor。
-    
-    # 以下為示意性質的推論流程，需根據 Qwen-TTS 官方文件調整
     try:
-        # 假設模型有 generate 函數支援音訊轉譯
-        # 實際情況可能需要 audio_values = processor(audio, sampling_rate=16000, return_tensors="pt")
-        # 由於是 MVP，這裡先實作一個結構架構
+        client = Groq(api_key=api_key)
         
-        # input_ids = tokenizer("Transcribe the following audio:", return_tensors="pt").to(device)
-        # 這裡需要傳入音訊特徵...
-        
-        # 為了 MVP 展示，我們先回傳一個「模擬轉譯」或「基礎邏輯」
-        # 在完整實作中，這裡會是 model.generate(...)
-        
-        return "這是從音訊轉譯出的初步需求文字內容（待完整模型對接實作）。"
-    except Exception as e:
-        print(f"Transcription error: {e}")
-        return f"轉譯過程出錯: {e}"
+        # 繁體中文引導提示詞
+        tc_prompt = "這是一段繁體中文的逐字稿，請確保輸出為繁體字並包含正確的標點符號。"
 
-if __name__ == "__main__":
-    # 測試程式碼 (需在 Streamlit 環境下執行以利用 load_model 的快取)
-    pass
+        with open(file_path, "rb") as file:
+            response = client.audio.transcriptions.create(
+                file=(os.path.basename(file_path), file.read()),
+                model="whisper-large-v3",
+                prompt=tc_prompt,
+                response_format="verbose_json",
+                language="zh",
+                temperature=0.0
+            )
+        
+        # 處理斷句換行
+        return process_segments(response.segments)
+        
+    except Exception as e:
+        return f"Groq 語音轉譯失敗: {str(e)}"
+
+def process_segments(segments, pause_threshold=0.8):
+    """
+    根據時間戳記偵測語音停頓，自動插入換行符。
+    支援字典 (dict) 或物件 (object) 格式。
+    """
+    full_text = ""
+    
+    def get_val(obj, key):
+        if isinstance(obj, dict):
+            return obj.get(key)
+        return getattr(obj, key, None)
+
+    for i in range(len(segments)):
+        current_s = segments[i]
+        text = get_val(current_s, 'text').strip()
+        
+        full_text += text
+        
+        # 檢查與下一段的間隔
+        if i < len(segments) - 1:
+            next_s = segments[i+1]
+            
+            curr_end = get_val(current_s, 'end')
+            next_start = get_val(next_s, 'start')
+            
+            if curr_end is not None and next_start is not None:
+                pause_duration = next_start - curr_end
+                
+                # 若停頓超過閾值，或者當前片段以句末標點結尾，則換行
+                if pause_duration > pause_threshold:
+                    full_text += "\n"
+                elif any(text.endswith(p) for p in ["。", "！", "？", "；"]):
+                    full_text += "\n"
+                else:
+                    full_text += " "
+            else:
+                full_text += " "
+                
+    return full_text.strip()

@@ -5,82 +5,92 @@ import database
 
 def generate_project_skeleton(prd_content):
     """
-    分析 PRD 並產出完整的檔案清單 (File Tree)。
+    第一階段：分析 PRD 並產出完整的檔案清單。
     """
-    selected_model = database.get_config("ACTIVE_MODEL", "gemini-2.0-flash")
-    
     system_prompt = """
-    你是一個資深軟體架構師。
-    請根據提供的 PRD 文件，列出實作該專案所需的「完整檔案清單」。
-    你必須以 JSON 陣列格式回傳字串清單，格式嚴格如下：
-    [
-      "README.md",
-      "requirements.txt",
-      "backend/main.py",
-      "frontend/src/App.js",
-      ...
-    ]
-    請確保：
-    1. 包含所有必要的設定檔 (Docker, .env.example, etc.)。
-    2. 檔案路徑邏輯清晰。
-    3. 「僅回傳 JSON 陣列」，不要有任何 Markdown 標記或解釋。
+    你是一個資深架構師。請根據 PRD 列出「完整檔案路徑清單」。
+    必須回傳純 JSON 陣列，例如 ["main.py", "models/user.py"]。
+    「僅回傳 JSON 內容」，不要有解釋。
     """
-
-    user_content = f"PRD 內容如下：\n{prd_content}"
+    user_content = f"PRD 內容：\n{prd_content}"
+    
+    raw_json = llm_service.call_model(system_prompt, user_content)
+    
+    # 處理 TPD 等待協定
+    if isinstance(raw_json, str) and raw_json.startswith("WAIT_REQUIRED"):
+        return raw_json
 
     try:
-        raw_json = llm_service.call_model(system_prompt, user_content)
-        
         # 清洗內容
-        raw_json = re.sub(r'^[^{[]*', '', raw_json)
-        raw_json = re.sub(r'[^}\]]*$', '', raw_json)
-        
-        return json.loads(raw_json)
+        cleaned_json = re.sub(r'^[^{[]*', '', raw_json)
+        cleaned_json = re.sub(r'[^}\]]*$', '', cleaned_json)
+        return json.loads(cleaned_json)
     except Exception as e:
-        print(f"Skeleton generation error: {e}")
+        print(f"Skeleton 解析錯誤: {e}, 原始內容: {raw_json}")
         return []
 
-def generate_file_content(prd_content, file_path, skeleton):
+def generate_interface_map(prd_content, skeleton):
     """
-    針對單一檔案生成完整代碼。
+    第二階段：建立「全域介面合約」。
     """
-    selected_model = database.get_config("ACTIVE_MODEL", "gemini-2.0-flash")
-    
     system_prompt = f"""
-    你是一個資深工程師。
-    請根據 PRD 與整個專案結構，撰寫檔案「{file_path}」的完整內容。
-    
-    專案結構如下：
-    {json.dumps(skeleton, indent=2)}
-    
-    要求：
-    1. 代碼必須完整、可執行，不可使用佔位符 (如 //...rest of code)。
-    2. 確保與結構中其他檔案的引用路徑一致。
-    3. 「僅回傳代碼內容」，不要有任何 Markdown 代碼塊標記 (如 ```python)。
+    你是一個首席架構師。針對以下專案結構，請定義各檔案間的「開發合約」。
+    包含公開函數、類別與依賴關係。
+    必須回傳 JSON 物件，格式：{{"filename": "說明"}}
     """
-
-    user_content = f"PRD 內容如下：\n{prd_content}"
+    user_content = f"專案結構：{skeleton}\n\nPRD 內容：\n{prd_content}"
+    
+    raw_json = llm_service.call_model(system_prompt, user_content)
+    
+    # 處理 TPD 等待協定
+    if isinstance(raw_json, str) and raw_json.startswith("WAIT_REQUIRED"):
+        return raw_json
 
     try:
-        content = llm_service.call_model(system_prompt, user_content)
-        
-        # 移除可能的 Markdown 標記
-        if "```" in content:
-            # 嘗試擷取中間內容
-            lines = content.splitlines()
-            if lines[0].startswith("```"):
-                lines = lines[1:]
-            if lines[-1].startswith("```"):
-                lines = lines[:-1]
-            content = "\n".join(lines)
-            
-        return content.strip()
-    except Exception as e:
-        print(f"File generation error ({file_path}): {e}")
-        return f"# Error generating file: {str(e)}"
+        cleaned_json = re.sub(r'^[^{]*', '', raw_json)
+        cleaned_json = re.sub(r'[^}]*$', '', cleaned_json)
+        return json.loads(cleaned_json)
+    except:
+        return {}
+
+def generate_file_content(prd_content, file_path, skeleton, interface_map):
+    """
+    第三階段：優化後的逐檔生成。
+    僅傳送相關的合約片段以節省 Token。
+    """
+    # 提取相關合約：包含目前檔案，以及可能被引用的核心檔案 (如 db, models, config)
+    relevant_keys = [file_path]
+    core_keywords = ["db", "model", "config", "util", "schema", "auth"]
+    for k in interface_map.keys():
+        if any(kw in k.lower() for kw in core_keywords):
+            relevant_keys.append(k)
+
+    sliced_map = {k: interface_map[k] for k in set(relevant_keys) if k in interface_map}
+
+    system_prompt = f"""
+    你是一個資深工程師。請撰寫「{file_path}」的完整內容。
+    必須符合相關介面合約：{json.dumps(sliced_map)}
+
+    要求：
+    1. 參考結構：{json.dumps(skeleton[:50])}... (僅顯示部分路徑)
+    2. 僅回傳代碼，不含 Markdown。
+    """
+    # 精簡 PRD：擷取核心開發部分 (假設 PRD 很長)
+    short_prd = prd_content[:5000] 
+    user_content = f"需求摘要：\n{short_prd}"
+
+    content = llm_service.call_model(system_prompt, user_content)
+
+    if isinstance(content, str) and content.startswith("WAIT_REQUIRED"):
+        return content
+
+    if "```" in content:
+        lines = content.splitlines()
+        if lines[0].startswith("```"): lines = lines[1:]
+        if lines[-1].startswith("```"): lines = lines[:-1]
+        content = "\n".join(lines)
+    return content.strip()
+
 
 def update_code_snippet(old_code, error_log):
-    """
-    整合修復邏輯。
-    """
     return llm_service.fix_code_error(old_code, error_log)

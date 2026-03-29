@@ -1,5 +1,7 @@
 import os
 
+from datetime import datetime
+
 OUTPUT_DIR = "output_projects"
 
 def ensure_output_dir():
@@ -8,10 +10,12 @@ def ensure_output_dir():
         os.makedirs(OUTPUT_DIR)
 
 def init_project_dir(project_name):
-    """建立專ance根目錄並回傳路徑。"""
+    """建立唯一專案根目錄 (加入時間戳記) 並回傳路徑。"""
     ensure_output_dir()
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_name = "".join([c for c in project_name if c.isalnum() or c in (" ", "-", "_")]).strip()
-    project_path = os.path.join(OUTPUT_DIR, safe_name)
+    folder_name = f"{safe_name}_{timestamp}"
+    project_path = os.path.join(OUTPUT_DIR, folder_name)
     os.makedirs(project_path, exist_ok=True)
     return project_path
 

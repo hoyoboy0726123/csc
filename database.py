@@ -40,9 +40,11 @@ def get_config(key, default=None):
 
 # 專案相關 CRUD 保持不變
 def create_project(name, root_path):
+    """建立新專案，儲存本地時間。"""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO projects (name, root_path) VALUES (?, ?)', (name, root_path))
+    cursor.execute('INSERT INTO projects (name, root_path, created_at) VALUES (?, ?, ?)', (name, root_path, now))
     p_id = cursor.lastrowid
     conn.commit()
     conn.close()
