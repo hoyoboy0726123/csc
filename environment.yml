@@ -1,0 +1,26 @@
+name: csc-env
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cpuonly # 預設使用 CPU，若有 GPU 可改為 cudatoolkit
+  - pip:
+      - streamlit>=1.55.0
+      - streamlit-mic-recorder>=0.0.8
+      - groq>=1.1.2
+      - google-genai>=1.68.0
+      - transformers>=4.57.3
+      - qwen-tts>=0.1.1
+      - librosa>=0.11.0
+      - soundfile>=0.13.1
+      - python-dotenv>=1.2.2
+      - huggingface-hub>=0.36.2
+      - accelerate>=1.12.0
+      - einops>=0.8.2
+      - sox>=1.5.0

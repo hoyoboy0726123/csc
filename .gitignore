@@ -1,10 +1,23 @@
-# Python-generated files
+# Python
 __pycache__/
 *.py[oc]
 build/
 dist/
-wheels/
 *.egg-info
+.venv/
 
-# Virtual environments
-.venv
+# Local System Data (Crucial for Security)
+dev_system.db
+dev_system.db-journal
+.env
+
+# Temporary Files
+temp_audio.wav
+recorded_requirement.wav
+
+# Generated Projects
+output_projects/
+
+# OS
+.DS_Store
+Thumbs.db
